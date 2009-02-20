@@ -398,9 +398,11 @@ module ThinkingSphinx
         page          = 1 if page <= 0
         client.offset = (page - 1) * client.limit
 
+        comment = (options[:comment] ? options[:comment] : '')
+
         begin
           ::ActiveRecord::Base.logger.debug "Sphinx: #{query}"
-          results = client.query query
+          results = client.query(query,'*',comment)
           ::ActiveRecord::Base.logger.debug "Sphinx Result: #{results[:matches].collect{|m| m[:attributes]["sphinx_internal_id"]}.inspect}"
         rescue Errno::ECONNREFUSED => err
           raise ThinkingSphinx::ConnectionError, "Connection to Sphinx Daemon (searchd) failed."

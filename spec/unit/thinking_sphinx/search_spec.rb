@@ -28,26 +28,33 @@ describe ThinkingSphinx::Search do
       
       it "should not apply by default" do
         ThinkingSphinx::Search.search "foo bar"
-        @client.should have_received(:query).with("foo bar")
+        @client.should have_received(:query).with("foo bar",'*','')
       end
 
       it "should apply when passed, and handle full extended syntax" do
         input    = %{a b* c (d | e) 123 5&6 (f_f g) !h "i j" "k l"~10 "m n"/3 @o p -(q|r)}
         expected = %{*a* b* *c* (*d* | *e*) *123* *5*&*6* (*f_f* *g*) !*h* "i j" "k l"~10 "m n"/3 @o *p* -(*q*|*r*)}
         ThinkingSphinx::Search.search input, :star => true
-        @client.should have_received(:query).with(expected)
+        @client.should have_received(:query).with(expected,'*','')
       end
 
       it "should default to /\w+/ as token" do
         ThinkingSphinx::Search.search "foo@bar.com", :star => true
-        @client.should have_received(:query).with("*foo*@*bar*.*com*")
+        @client.should have_received(:query).with("*foo*@*bar*.*com*",'*','')
       end
 
       it "should honour custom token" do
         ThinkingSphinx::Search.search "foo@bar.com -foo-bar", :star => /[\w@.-]+/u
-        @client.should have_received(:query).with("*foo@bar.com* -*foo-bar*")
+        @client.should have_received(:query).with("*foo@bar.com* -*foo-bar*",'*','')
       end
 
+    end
+    
+    describe ":comment option" do
+      it "should add comment to log" do
+        ThinkingSphinx::Search.search "foo bar", :comment => "custom log"
+        @client.should have_received(:query).with("foo bar",'*', "custom log")
+      end
     end
   end
 end
